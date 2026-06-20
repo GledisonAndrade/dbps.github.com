@@ -5,8 +5,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const filtroAlimento = document.getElementById('filtro-alimento');
     const btnLimparAlimentos = document.getElementById('limpar-filtro-alimento');
 
-    // Inicializar dados de alimentos
-    if (!window.dados.alimentos) {
+    // Inicializar dados de alimentos sem depender da ordem de carga dos scripts
+    if (!window.dados) {
+        if (window.ArmazenamentoDados && window.ArmazenamentoDados.dados) {
+            window.dados = window.ArmazenamentoDados.dados;
+        } else {
+            window.dados = { glicemias: [], metas: [], alimentos: [] };
+        }
+    }
+
+    if (!Array.isArray(window.dados.alimentos)) {
         window.dados.alimentos = [];
     }
 
