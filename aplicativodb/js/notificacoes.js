@@ -166,8 +166,8 @@ class SistemaNotificacoes {
 window.Notificacoes = new SistemaNotificacoes();
 
 // Adicionar estilos de animação
-const styleAnimacoes = document.createElement('style');
-styleAnimacoes.textContent = `
+const styleAnimacoesNotificacoes = document.createElement('style');
+styleAnimacoesNotificacoes.textContent = `
     @keyframes slideInRight {
         from {
             transform: translateX(400px);
@@ -194,4 +194,4 @@ styleAnimacoes.textContent = `
         opacity: 1 !important;
     }
 `;
-document.head.appendChild(styleAnimacoes);
+document.head.appendChild(styleAnimacoesNotificacoes);

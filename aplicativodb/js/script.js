@@ -666,8 +666,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Adicionar estilos de animação
-const styleAnimacoes = document.createElement('style');
-styleAnimacoes.textContent = `
+const styleAnimacoesScript = document.createElement('style');
+styleAnimacoesScript.textContent = `
     @keyframes slideIn {
         from { 
             transform: translateY(20px); 
@@ -684,4 +684,4 @@ styleAnimacoes.textContent = `
         to { opacity: 1; }
     }
 `;
-document.head.appendChild(styleAnimacoes);
+document.head.appendChild(styleAnimacoesScript);
