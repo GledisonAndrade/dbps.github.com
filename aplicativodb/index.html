@@ -276,9 +276,22 @@
         // Registrar Service Worker para PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('✅ Service Worker registrado'))
-                    .catch(err => console.log('⚠️ Erro ao registrar Service Worker:', err));
+                const scopeAtual = new URL('./', window.location.href).href;
+
+                navigator.serviceWorker.getRegistrations()
+                    .then(registracoes => {
+                        const limpeza = registracoes
+                            .filter(reg => reg.scope !== scopeAtual)
+                            .map(reg => reg.unregister());
+
+                        return Promise.all(limpeza);
+                    })
+                    .catch(err => console.log('⚠️ Erro ao limpar Service Workers antigos:', err))
+                    .finally(() => {
+                        navigator.serviceWorker.register('sw.js', { scope: './' })
+                            .then(() => console.log('✅ Service Worker registrado'))
+                            .catch(err => console.log('⚠️ Erro ao registrar Service Worker:', err));
+                    });
             });
         }
     </script>
