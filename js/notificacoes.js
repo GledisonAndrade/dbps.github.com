@@ -26,7 +26,7 @@ class SistemaNotificacoes {
                 gap: 10px;
                 max-width: 400px;
             `;
-            document.body.appendChild(conteiner);
+            (document.body || document.documentElement).appendChild(conteiner);
         }
         return conteiner;
     }
@@ -160,8 +160,8 @@ class SistemaNotificacoes {
 window.Notificacoes = new SistemaNotificacoes();
 
 // Adicionar estilos de animação
-const styleAnimacoes = document.createElement('style');
-styleAnimacoes.textContent = `
+const styleAnimacoesNotif = document.createElement('style');
+styleAnimacoesNotif.textContent = `
     @keyframes slideInRight {
         from {
             transform: translateX(400px);
@@ -188,4 +188,4 @@ styleAnimacoes.textContent = `
         opacity: 1 !important;
     }
 `;
-document.head.appendChild(styleAnimacoes);
+document.head.appendChild(styleAnimacoesNotif);

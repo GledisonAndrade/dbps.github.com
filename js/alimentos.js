@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnLimparAlimentos = document.getElementById('limpar-filtro-alimento');
 
     // Inicializar dados de alimentos
+    window.dados = window.dados || window.ArmazenamentoDados?.dados || {};
     if (!window.dados.alimentos) {
         window.dados.alimentos = [];
     }

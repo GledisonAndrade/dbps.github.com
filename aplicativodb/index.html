@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="css/temas.css">
     <link rel="stylesheet" href="css/profissional.css">
     <link rel="stylesheet" href="css/aprimoramentos.css">
+    <link rel="stylesheet" href="css/modern.css">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -74,12 +75,14 @@
             <nav class="main-nav">
                 <ul class="nav-list">
                     <li><a href="#" data-section="registro" class="nav-link active"><i class="fas fa-edit"></i> <span class="nav-text">Registrar</span></a></li>
+                    <li><a href="#" data-section="painel" class="nav-link"><i class="fas fa-gauge-high"></i> <span class="nav-text">Painel</span></a></li>
                     <li><a href="#" data-section="historico" class="nav-link"><i class="fas fa-history"></i> <span class="nav-text">Histórico</span></a></li>
                     <li><a href="#" data-section="grafico" class="nav-link"><i class="fas fa-chart-line"></i> <span class="nav-text">Gráficos</span></a></li>
                     <li><a href="#" data-section="pizza" class="nav-link"><i class="fas fa-chart-pie"></i> <span class="nav-text">Distribuição</span></a></li>
                     <li><a href="#" data-section="metas" class="nav-link"><i class="fas fa-bullseye"></i> <span class="nav-text">Metas</span></a></li>
                     <li><a href="#" data-section="alimentos" class="nav-link"><i class="fas fa-apple-alt"></i> <span class="nav-text">Alimentos</span></a></li>
                     <li><a href="#" data-section="indice" class="nav-link"><i class="fas fa-calculator"></i> <span class="nav-text">Índice</span></a></li>
+                    <li><a href="#" data-section="exercicios" class="nav-link"><i class="fas fa-person-running"></i> <span class="nav-text">Exercícios</span></a></li>
                     <li><a href="#" data-section="relatorio" class="nav-link"><i class="fas fa-file-pdf"></i> <span class="nav-text">Relatórios</span></a></li>
                     <li><a href="#" data-section="sobre" class="nav-link"><i class="fas fa-info-circle"></i> <span class="nav-text">Sobre</span></a></li>
                 </ul>
@@ -128,6 +131,92 @@
             </div>
         </section>
 
+        <!-- SEÇÃO PAINEL -->
+        <section id="painel" class="secao">
+            <div class="section-header"><h2><i class="fas fa-gauge-high"></i> Painel Inteligente</h2><p>Indicadores e gráficos interativos do seu controle glicêmico</p></div>
+            <div class="dc-toolbar">
+                <div class="dc-chips" id="painel-periodo" role="group" aria-label="Período">
+                    <button class="dc-chip" data-dias="7">7 dias</button>
+                    <button class="dc-chip ativo" data-dias="14">14 dias</button>
+                    <button class="dc-chip" data-dias="30">30 dias</button>
+                    <button class="dc-chip" data-dias="90">90 dias</button>
+                    <button class="dc-chip" data-dias="0">Tudo</button>
+                </div>
+                <button id="painel-pdf" class="btn btn-primary dc-btn-sm"><i class="fas fa-file-pdf"></i> Exportar relatório PDF</button>
+            </div>
+            <div id="painel-conteudo">
+                <div class="dc-kpis" id="painel-kpis"></div>
+                <div class="dc-insights" id="painel-insights"></div>
+                <div class="dc-grid">
+                    <div class="card dc-span2">
+                        <div class="dc-card-head"><h3><i class="fas fa-chart-line"></i> Evolução</h3>
+                            <div class="dc-chips dc-mini" id="painel-tipo"><button class="dc-chip ativo" data-tipo="line">Linha</button><button class="dc-chip" data-tipo="bar">Barras</button></div></div>
+                        <div class="dc-chart-box"><canvas id="pn-linha"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="dc-card-head"><h3><i class="fas fa-bullseye"></i> Tempo no alvo</h3></div>
+                        <div class="dc-chart-box dc-small"><canvas id="pn-rosca"></canvas></div>
+                        <p class="dc-hint">Clique numa fatia para ver os registros.</p>
+                    </div>
+                    <div class="card">
+                        <div class="dc-card-head"><h3><i class="fas fa-sun"></i> Média por período do dia</h3></div>
+                        <div class="dc-chart-box dc-small"><canvas id="pn-periodo"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="dc-card-head"><h3><i class="fas fa-calendar-week"></i> Média por dia da semana</h3></div>
+                        <div class="dc-chart-box dc-small"><canvas id="pn-semana"></canvas></div>
+                    </div>
+                    <div class="card" id="painel-detalhe-card" hidden>
+                        <div class="dc-card-head"><h3 id="painel-detalhe-titulo">Registros</h3><button class="dc-chip" id="painel-detalhe-fechar">Fechar</button></div>
+                        <ul class="dc-lista" id="painel-detalhe"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO EXERCÍCIOS -->
+        <section id="exercicios" class="secao">
+            <div class="section-header"><h2><i class="fas fa-person-running"></i> Plano de Exercícios</h2><p>Plano semanal adaptado ao seu nível, com segurança baseada na sua glicemia</p></div>
+            <div class="dc-aviso" id="ex-aviso"></div>
+            <div class="dc-grid">
+                <div class="card">
+                    <div class="dc-card-head"><h3><i class="fas fa-layer-group"></i> Meu plano</h3></div>
+                    <div class="dc-nivel" id="ex-nivel">
+                        <button class="dc-nivel-op" data-nivel="iniciante"><i class="fas fa-seedling"></i><b>Iniciante</b><small>~90 min/sem</small></button>
+                        <button class="dc-nivel-op" data-nivel="intermediario"><i class="fas fa-fire"></i><b>Intermediário</b><small>~150 min/sem</small></button>
+                        <button class="dc-nivel-op" data-nivel="avancado"><i class="fas fa-bolt"></i><b>Avançado</b><small>~210 min/sem</small></button>
+                    </div>
+                    <div class="dc-progresso"><div class="dc-anel" id="ex-anel"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="bg"/><circle cx="60" cy="60" r="52" class="fg" id="ex-anel-fg"/></svg><span id="ex-anel-txt">0%</span></div>
+                        <div><div class="dc-big" id="ex-min-sem">0 min</div><div class="dc-hint">concluídos na semana de <span id="ex-meta-sem">150</span> min</div><div class="dc-hint" id="ex-sequencia"></div></div></div>
+                </div>
+                <div class="card">
+                    <div class="dc-card-head"><h3><i class="fas fa-stopwatch"></i> Treino ao vivo</h3></div>
+                    <div class="dc-timer" id="ex-timer">00:00</div>
+                    <div class="form-group"><label for="ex-tipo">Atividade</label><select id="ex-tipo"></select></div>
+                    <div class="form-row"><div class="form-group"><label for="ex-antes">Glicemia antes</label><input type="number" id="ex-antes" min="20" max="600" placeholder="mg/dL"></div>
+                        <div class="form-group"><label for="ex-depois">Glicemia depois</label><input type="number" id="ex-depois" min="20" max="600" placeholder="mg/dL"></div></div>
+                    <div class="dc-row-btn"><button class="btn btn-primary" id="ex-iniciar"><i class="fas fa-play"></i> Iniciar</button><button class="btn" id="ex-parar" disabled><i class="fas fa-stop"></i> Finalizar</button></div>
+                </div>
+                <div class="card dc-span2">
+                    <div class="dc-card-head"><h3><i class="fas fa-calendar-check"></i> Semana</h3><div class="dc-hint">Toque num exercício para marcar como feito</div></div>
+                    <div class="dc-semana" id="ex-semana"></div>
+                </div>
+                <div class="card">
+                    <div class="dc-card-head"><h3><i class="fas fa-chart-column"></i> Minutos por dia</h3></div>
+                    <div class="dc-chart-box dc-small"><canvas id="ex-chart-min"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="dc-card-head"><h3><i class="fas fa-arrow-trend-down"></i> Efeito na glicemia</h3></div>
+                    <div class="dc-chart-box dc-small"><canvas id="ex-chart-efeito"></canvas></div>
+                    <p class="dc-hint">Glicemia antes vs. depois dos treinos registrados.</p>
+                </div>
+                <div class="card dc-span2">
+                    <div class="dc-card-head"><h3><i class="fas fa-clock-rotate-left"></i> Treinos recentes</h3></div>
+                    <ul class="dc-lista" id="ex-historico"></ul>
+                </div>
+            </div>
+            <p class="dc-hint">Orientação geral. Converse com sua equipe de saúde antes de iniciar ou mudar a rotina de exercícios.</p>
+        </section>
         <!-- SEÇÃO HISTÓRICO -->
         <section id="historico" class="secao">
             <div class="section-header"><h2><i class="fas fa-history"></i> Histórico de Glicemia</h2><p>Visualize todos os seus registros anteriores</p></div>
@@ -272,6 +361,8 @@
     <script src="js/alimentos.js"></script>
     <script src="js/testes.js"></script>
     <script src="js/debug.js"></script>
+    <script src="js/painel.js"></script>
+    <script src="js/exercicios.js"></script>
     <script>
         // Registrar Service Worker para PWA
         if ('serviceWorker' in navigator) {

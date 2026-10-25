@@ -1,5 +1,5 @@
 // Service Worker para DiabetesCare - PWA
-const CACHE_NAME = 'diabetescare-v4';
+const CACHE_NAME = 'diabetescare-v5';
 const BASE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, '');
 const STATIC_FILES = [
   'index.html',
@@ -9,6 +9,9 @@ const STATIC_FILES = [
   'css/temas.css',
   'css/profissional.css',
   'css/aprimoramentos.css',
+  'css/modern.css',
+  'js/painel.js',
+  'js/exercicios.js',
   'js/config.js',
   'js/utils.js',
   'js/notificacoes.js',
