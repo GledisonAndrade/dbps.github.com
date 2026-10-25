@@ -330,11 +330,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                if (!navigator.geolocation) {
-                    Notificacoes.erro('Este navegador não permite acessar a localização');
-                    return;
-                }
-
                 const janelaWhatsApp = window.open('about:blank', '_blank');
                 if (!janelaWhatsApp) {
                     Notificacoes.erro('Permita a abertura de pop-ups para enviar a mensagem pelo WhatsApp');
@@ -342,27 +337,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 janelaWhatsApp.opener = null;
 
-                navigator.geolocation.getCurrentPosition(posicao => {
+                const abrirWhatsApp = posicao => {
                     const glicemia = ArmazenamentoDados.obterGlicemias()[0];
                     const valorGlicemia = glicemia
                         ? `Minha glicemia registrada mais recente é ${glicemia.glicemia} mg/dL${glicemia.data ? ` (${glicemia.data}${glicemia.hora ? ` às ${glicemia.hora}` : ''})` : ''}.`
                         : 'Não tenho uma glicemia registrada neste aplicativo.';
-                    const latitude = posicao.coords.latitude.toFixed(6);
-                    const longitude = posicao.coords.longitude.toFixed(6);
-                    const mensagem = `Preciso de ajuda. ${valorGlicemia} Minha localização atual: https://maps.google.com/?q=${latitude},${longitude}`;
+                    const localizacao = posicao
+                        ? ` Minha localização atual: https://maps.google.com/?q=${posicao.coords.latitude.toFixed(6)},${posicao.coords.longitude.toFixed(6)}`
+                        : '';
+                    const mensagem = `Preciso de ajuda. ${valorGlicemia}${localizacao}`;
                     const numeroWhatsApp = telefone.length === 10 || telefone.length === 11
                         ? `55${telefone}`
                         : telefone;
 
                     janelaWhatsApp.location.href = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
-                }, erro => {
-                    janelaWhatsApp.close();
-                    const mensagensErro = {
-                        1: 'Permita o acesso à localização para enviar o pedido de ajuda',
-                        2: 'Não foi possível obter sua localização atual',
-                        3: 'A busca pela localização demorou demais; tente novamente'
-                    };
-                    Notificacoes.erro(mensagensErro[erro.code] || 'Erro ao obter sua localização');
+                };
+
+                if (!navigator.geolocation) {
+                    abrirWhatsApp();
+                    Notificacoes.aviso('Não foi possível acessar a localização; abrindo o WhatsApp sem ela');
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(abrirWhatsApp, () => {
+                    abrirWhatsApp();
+                    Notificacoes.aviso('Não foi possível obter a localização; abrindo o WhatsApp sem ela');
                 }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
             });
         }
