@@ -120,13 +120,21 @@
                 </form>
             </div>
             <div class="card alertas-card">
-                <h3><i class="fas fa-bell"></i> Sistema de Alertas</h3>
+                <h3><i class="fas fa-phone"></i> Contato de Emergência</h3>
                 <div class="alertas-content">
                     <div class="form-row">
-                        <div class="form-group"><label for="limite-baixo">Limite de Alerta Baixo (mg/dL)</label><input type="number" id="limite-baixo" value="70" min="50" max="100"></div>
-                        <div class="form-group"><label for="contato-emergencia"><i class="fas fa-phone"></i> Contato de Emergência</label><input type="tel" id="contato-emergencia" placeholder="(11) 99999-9999"></div>
+                        <div class="form-group">
+                            <label for="contato-emergencia"><i class="fas fa-phone"></i> Telefone do contato de emergência</label>
+                            <input type="tel" id="contato-emergencia" placeholder="(11) 99999-9999" autocomplete="tel">
+                            <small class="contato-orientacao">Informe o DDD. Para outros países, inclua o código do país.</small>
+                        </div>
                     </div>
-                    <button id="testar-alerta" class="btn btn-alerta"><i class="fas fa-bell"></i> Testar Alerta</button>
+                    <div class="contato-acoes">
+                        <button type="button" id="salvar-contato-emergencia" class="btn btn-primary"><i class="fas fa-save"></i> Salvar contato</button>
+                        <button type="button" id="editar-contato-emergencia" class="btn btn-secondary" hidden><i class="fas fa-edit"></i> Editar contato</button>
+                        <button type="button" id="pedir-ajuda-whatsapp" class="btn btn-success" disabled><i class="fab fa-whatsapp"></i> Pedir ajuda pelo WhatsApp</button>
+                    </div>
+                    <small class="contato-orientacao">O WhatsApp abrirá com a mensagem preenchida; confirme o envio no aplicativo.</small>
                 </div>
             </div>
         </section>

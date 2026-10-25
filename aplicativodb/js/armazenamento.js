@@ -56,6 +56,25 @@ class GerenciadorDados {
         }
     }
 
+    obterContatoEmergencia() {
+        try {
+            return localStorage.getItem('diabetescare_contato_emergencia') || '';
+        } catch (erro) {
+            console.error('❌ Erro ao carregar contato de emergência:', erro);
+            throw erro;
+        }
+    }
+
+    salvarContatoEmergencia(contato) {
+        try {
+            localStorage.setItem('diabetescare_contato_emergencia', contato);
+            return { sucesso: true };
+        } catch (erro) {
+            console.error('❌ Erro ao salvar contato de emergência:', erro);
+            return { sucesso: false, erro: erro.message };
+        }
+    }
+
     /**
      * Obtém todos os dados de glicemia
      * @param {object} filtros - Filtros opcionais { data, status }

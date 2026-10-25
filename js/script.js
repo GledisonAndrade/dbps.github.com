@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainNav = document.querySelector('.main-nav');
     const formGlicemia = document.getElementById('form-glicemia');
     const formMeta = document.getElementById('form-meta');
-    const btnTestarAlerta = document.getElementById('testar-alerta');
     const btnLimparFiltro = document.getElementById('limpar-filtro');
     
     // Fazer dados globalmente acessíveis
@@ -279,21 +278,92 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function inicializarBotoesAcao() {
-        // Botão testar alerta
-        if (btnTestarAlerta) {
-            btnTestarAlerta.addEventListener('click', () => {
-                const limite = document.getElementById('limite-baixo').value || '70';
-                const contato = document.getElementById('contato-emergencia').value;
-                
-                if (!contato) {
-                    Notificacoes.erro('Informe um contato de emergência');
+        const campoContato = document.getElementById('contato-emergencia');
+        const btnSalvarContato = document.getElementById('salvar-contato-emergencia');
+        const btnEditarContato = document.getElementById('editar-contato-emergencia');
+        const btnPedirAjuda = document.getElementById('pedir-ajuda-whatsapp');
+
+        if (campoContato && btnSalvarContato && btnEditarContato && btnPedirAjuda) {
+            const atualizarEstadoContato = salvo => {
+                campoContato.readOnly = salvo;
+                btnSalvarContato.hidden = salvo;
+                btnEditarContato.hidden = !salvo;
+                btnPedirAjuda.disabled = !salvo;
+            };
+
+            try {
+                const contatoSalvo = ArmazenamentoDados.obterContatoEmergencia();
+                campoContato.value = contatoSalvo;
+                atualizarEstadoContato(Boolean(contatoSalvo));
+            } catch (erro) {
+                Notificacoes.erro('Não foi possível carregar o contato de emergência');
+            }
+
+            btnSalvarContato.addEventListener('click', () => {
+                const contato = campoContato.value.trim();
+                const telefone = contato.replace(/\D/g, '').replace(/^00/, '');
+
+                if (telefone.length < 10 || telefone.length > 15) {
+                    Notificacoes.erro('Informe um telefone válido com DDD e código do país, se necessário');
                     return;
                 }
-                
-                Notificacoes.info(
-                    `Alerta ativado! Mensagem será enviada para ${contato} quando glicemia < ${limite} mg/dL`,
-                    5000
-                );
+
+                const resultado = ArmazenamentoDados.salvarContatoEmergencia(contato);
+                if (!resultado.sucesso) {
+                    Notificacoes.erro(`Não foi possível salvar o contato: ${resultado.erro}`);
+                    return;
+                }
+
+                atualizarEstadoContato(true);
+                Notificacoes.sucesso('Contato de emergência salvo');
+            });
+
+            btnEditarContato.addEventListener('click', () => {
+                atualizarEstadoContato(false);
+                campoContato.focus();
+            });
+
+            btnPedirAjuda.addEventListener('click', () => {
+                const telefone = campoContato.value.replace(/\D/g, '').replace(/^00/, '');
+                if (telefone.length < 10 || telefone.length > 15) {
+                    Notificacoes.erro('Edite e salve um telefone válido antes de pedir ajuda');
+                    return;
+                }
+
+                if (!navigator.geolocation) {
+                    Notificacoes.erro('Este navegador não permite acessar a localização');
+                    return;
+                }
+
+                const janelaWhatsApp = window.open('about:blank', '_blank');
+                if (!janelaWhatsApp) {
+                    Notificacoes.erro('Permita a abertura de pop-ups para enviar a mensagem pelo WhatsApp');
+                    return;
+                }
+                janelaWhatsApp.opener = null;
+
+                navigator.geolocation.getCurrentPosition(posicao => {
+                    const glicemia = ArmazenamentoDados.obterGlicemias()[0];
+                    const valorGlicemia = glicemia
+                        ? `Minha glicemia registrada mais recente é ${glicemia.glicemia} mg/dL${glicemia.data ? ` (${glicemia.data}${glicemia.hora ? ` às ${glicemia.hora}` : ''})` : ''}.`
+                        : 'Não tenho uma glicemia registrada neste aplicativo.';
+                    const latitude = posicao.coords.latitude.toFixed(6);
+                    const longitude = posicao.coords.longitude.toFixed(6);
+                    const mensagem = `Preciso de ajuda. ${valorGlicemia} Minha localização atual: https://maps.google.com/?q=${latitude},${longitude}`;
+                    const numeroWhatsApp = telefone.length === 10 || telefone.length === 11
+                        ? `55${telefone}`
+                        : telefone;
+
+                    janelaWhatsApp.location.href = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+                }, erro => {
+                    janelaWhatsApp.close();
+                    const mensagensErro = {
+                        1: 'Permita o acesso à localização para enviar o pedido de ajuda',
+                        2: 'Não foi possível obter sua localização atual',
+                        3: 'A busca pela localização demorou demais; tente novamente'
+                    };
+                    Notificacoes.erro(mensagensErro[erro.code] || 'Erro ao obter sua localização');
+                }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
             });
         }
         

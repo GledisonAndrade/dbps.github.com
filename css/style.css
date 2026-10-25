@@ -377,6 +377,27 @@ body {
     background: linear-gradient(135deg, #e67e22, #d35400);
 }
 
+.contato-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.contato-acoes [hidden] {
+    display: none;
+}
+
+.contato-orientacao {
+    display: block;
+    margin-top: 6px;
+    color: var(--cor-texto-secundario, #666);
+}
+
+.contato-acoes button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .btn-success:disabled {
     opacity: 0.5;
     cursor: not-allowed;
