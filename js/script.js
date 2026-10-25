@@ -330,13 +330,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                const janelaWhatsApp = window.open('about:blank', '_blank');
-                if (!janelaWhatsApp) {
-                    Notificacoes.erro('Permita a abertura de pop-ups para enviar a mensagem pelo WhatsApp');
-                    return;
-                }
-                janelaWhatsApp.opener = null;
-
                 const abrirWhatsApp = posicao => {
                     const glicemia = ArmazenamentoDados.obterGlicemias()[0];
                     const valorGlicemia = glicemia
@@ -350,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ? `55${telefone}`
                         : telefone;
 
-                    janelaWhatsApp.location.href = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+                    window.location.assign(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`);
                 };
 
                 if (!navigator.geolocation) {
