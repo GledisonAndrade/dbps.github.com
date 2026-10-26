@@ -188,6 +188,37 @@ class GerenciadorDados {
     }
 
     /**
+     * Edita meta existente
+     * @param {string} id - ID da meta
+     * @param {object} dados - { descricao, dataLimite, categoria }
+     */
+    editarMeta(id, dados) {
+        const meta = this.dados.metas.find(m => m.id === id);
+        if (!meta) {
+            return { sucesso: false, erro: 'Meta não encontrada' };
+        }
+        if (!dados.descricao || dados.descricao.trim() === '') {
+            return { sucesso: false, erro: 'Descrição é obrigatória' };
+        }
+
+        meta.descricao = dados.descricao.trim();
+        meta.dataLimite = dados.dataLimite || '';
+        meta.categoria = dados.categoria || meta.categoria;
+        this.salvarDados();
+        return { sucesso: true, meta };
+    }
+
+    /**
+     * Remove metas de teste/demonstração gravadas anteriormente
+     */
+    removerMetasDemo() {
+        const demo = ['Meta de teste', 'Caminhar 30 minutos por dia', 'Reduzir consumo de açúcar', 'Tomar medicação corretamente'];
+        const antes = this.dados.metas.length;
+        this.dados.metas = this.dados.metas.filter(m => !demo.includes(m.descricao));
+        if (this.dados.metas.length !== antes) this.salvarDados();
+    }
+
+    /**
      * Marca meta como concluída
      * @param {string} id - ID da meta
      * @returns {object} { sucesso, erro }

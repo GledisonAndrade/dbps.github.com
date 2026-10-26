@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const formGlicemia = document.getElementById('form-glicemia');
     const formMeta = document.getElementById('form-meta');
     const btnLimparFiltro = document.getElementById('limpar-filtro');
+    let metaEmEdicaoId = null;
+    const CHAVE_LEMBRETE = 'diabetescare_lembrete_glicemia';
+    let timerLembrete = null;
     
     // Fazer dados globalmente acessíveis
     window.dados = ArmazenamentoDados.dados;
@@ -190,6 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const agora = new Date();
         document.getElementById('data').value = agora.toISOString().split('T')[0];
         document.getElementById('hora').value = agora.toTimeString().substring(0, 5);
+
+        document.getElementById('glicemia').addEventListener('input', atualizarCamposGlicemiaAlta);
         
         formGlicemia.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -206,12 +211,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
+                const lembrete = document.getElementById('lembrete-30').checked;
+                const insulina = document.getElementById('insulina').value;
+
                 // Adicionar glicemia via gerenciador
                 const resultado = ArmazenamentoDados.adicionarGlicemia({
                     glicemia,
                     data,
                     hora,
-                    observacao
+                    observacao,
+                    insulina
                 });
                 
                 if (!resultado.sucesso) {
@@ -221,7 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Sucesso
                 Notificacoes.sucesso(`Glicemia registrada: ${glicemia} mg/dL`);
+                if (lembrete) agendarLembrete30();
                 formGlicemia.reset();
+                atualizarCamposGlicemiaAlta();
                 document.getElementById('data').value = new Date().toISOString().split('T')[0];
                 document.getElementById('hora').value = new Date().toTimeString().substring(0, 5);
                 
@@ -237,12 +248,80 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    function sairEdicaoMeta() {
+        metaEmEdicaoId = null;
+        formMeta.reset();
+        document.getElementById('btn-salvar-meta').innerHTML = '<i class="fas fa-plus"></i> Adicionar Meta';
+        document.getElementById('btn-cancelar-edicao-meta').hidden = true;
+    }
+
+    function iniciarEdicaoMeta(meta) {
+        metaEmEdicaoId = meta.id;
+        document.getElementById('descricao-meta').value = meta.descricao;
+        document.getElementById('data-meta').value = meta.dataLimite || '';
+        document.getElementById('categoria-meta').value = meta.categoria;
+        document.getElementById('btn-salvar-meta').innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+        document.getElementById('btn-cancelar-edicao-meta').hidden = false;
+        formMeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('descricao-meta').focus();
+    }
+
+    // ===== INSULINA CORRETIVA E LEMBRETE =====
+    function atualizarCamposGlicemiaAlta() {
+        const valor = parseInt(document.getElementById('glicemia').value, 10);
+        const alta = valor > 180;
+        document.getElementById('grupo-insulina').hidden = !alta;
+        if (!alta) document.getElementById('insulina').value = '';
+        if (alta) document.getElementById('lembrete-30').checked = true;
+    }
+
+    function dispararLembrete() {
+        localStorage.removeItem(CHAVE_LEMBRETE);
+        const texto = 'Hora de medir sua glicose novamente (30 min após a última medição).';
+        Notificacoes.aviso(texto, 15000);
+        if ('Notification' in window && Notification.permission === 'granted') {
+            const opcoes = { body: texto, icon: 'imagens/diabetes.png', tag: 'lembrete-glicemia', requireInteraction: true };
+            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                navigator.serviceWorker.ready
+                    .then(reg => reg.showNotification('DiabetesCare', opcoes))
+                    .catch(() => new Notification('DiabetesCare', opcoes));
+            } else {
+                new Notification('DiabetesCare', opcoes);
+            }
+        }
+    }
+
+    function programarTimerLembrete(quando) {
+        clearTimeout(timerLembrete);
+        timerLembrete = setTimeout(dispararLembrete, Math.max(0, quando - Date.now()));
+    }
+
+    function agendarLembrete30() {
+        const quando = Date.now() + 30 * 60 * 1000;
+        localStorage.setItem(CHAVE_LEMBRETE, String(quando));
+        programarTimerLembrete(quando);
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        Notificacoes.info('Lembrete agendado: você será avisado em 30 minutos', 5000);
+    }
+
+    function verificarLembretePendente() {
+        const quando = parseInt(localStorage.getItem(CHAVE_LEMBRETE), 10);
+        if (quando) programarTimerLembrete(quando);
+    }
+
     function inicializarFormularioMetas() {
         if (!formMeta) return;
         
         // Definir data mínima
         const hoje = new Date().toISOString().split('T')[0];
         document.getElementById('data-meta').min = hoje;
+
+        document.getElementById('btn-cancelar-edicao-meta').addEventListener('click', () => {
+            sairEdicaoMeta();
+            document.getElementById('data-meta').min = hoje;
+        });
         
         formMeta.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -251,20 +330,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const descricao = document.getElementById('descricao-meta').value;
                 const dataLimite = document.getElementById('data-meta').value;
                 const categoria = document.getElementById('categoria-meta').value;
+                const editando = metaEmEdicaoId !== null;
                 
-                const resultado = ArmazenamentoDados.adicionarMeta({
-                    descricao,
-                    dataLimite,
-                    categoria
-                });
+                const resultado = editando
+                    ? ArmazenamentoDados.editarMeta(metaEmEdicaoId, { descricao, dataLimite, categoria })
+                    : ArmazenamentoDados.adicionarMeta({ descricao, dataLimite, categoria });
                 
                 if (!resultado.sucesso) {
                     Notificacoes.erro(resultado.erro);
                     return;
                 }
                 
-                Notificacoes.sucesso('Meta adicionada com sucesso!');
-                formMeta.reset();
+                Notificacoes.sucesso(editando ? 'Meta atualizada!' : 'Meta adicionada com sucesso!');
+                sairEdicaoMeta();
                 document.getElementById('data-meta').min = hoje;
                 
                 atualizarMetas();
@@ -331,9 +409,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const abrirWhatsApp = posicao => {
-                    const glicemia = ArmazenamentoDados.obterGlicemias()[0];
+                    const agora = Date.now();
+                    const glicemia = ArmazenamentoDados.obterGlicemias()
+                        .find(g => g.timestamp <= agora) || ArmazenamentoDados.obterGlicemias()[0];
                     const valorGlicemia = glicemia
-                        ? `Minha glicemia registrada mais recente é ${glicemia.glicemia} mg/dL${glicemia.data ? ` (${glicemia.data}${glicemia.hora ? ` às ${glicemia.hora}` : ''})` : ''}.`
+                        ? `Minha glicemia registrada mais recente é ${glicemia.glicemia} mg/dL${glicemia.data ? ` (${Utils.formatarData(glicemia.data)}${glicemia.hora ? ` às ${glicemia.hora}` : ''})` : ''}${glicemia.insulina ? `, com ${glicemia.insulina} U de insulina corretiva` : ''}.`
                         : 'Não tenho uma glicemia registrada neste aplicativo.';
                     const localizacao = posicao
                         ? ` Minha localização atual: https://maps.google.com/?q=${posicao.coords.latitude.toFixed(6)},${posicao.coords.longitude.toFixed(6)}`
@@ -384,6 +464,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== INICIALIZAÇÃO DE DADOS =====
     function inicializarDados() {
+        ArmazenamentoDados.removerMetasDemo();
+        verificarLembretePendente();
         atualizarHistorico();
         atualizarMetas();
         window.atualizarDistribuicao();
@@ -435,6 +517,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="registro-data">
                         ${Utils.formatarData(registro.data)} às ${registro.hora}
                     </div>
+                    ${registro.insulina ? `
+                        <div class="registro-obs">
+                            <i class="fas fa-syringe"></i> Insulina corretiva: ${registro.insulina} U
+                        </div>
+                    ` : ''}
                     ${registro.observacao ? `
                         <div class="registro-obs">
                             <i class="fas fa-comment"></i> ${registro.observacao}
@@ -501,6 +588,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     <div class="meta-acoes">
+                        <button class="btn-editar" title="Editar meta">
+                            <i class="fas fa-pen"></i>
+                        </button>
                         <button class="btn-concluir" title="Concluir meta">
                             <i class="fas fa-check"></i>
                         </button>
@@ -510,6 +600,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
                 
+                li.querySelector('.btn-editar').addEventListener('click', () => iniciarEdicaoMeta(meta));
+
                 li.querySelector('.btn-concluir').addEventListener('click', () => {
                     const resultado = ArmazenamentoDados.concluirMeta(meta.id);
                     if (resultado.sucesso) {
@@ -690,34 +782,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ArmazenamentoDados.adicionarGlicemia(dado);
         });
         
-        // Metas de demonstração
-        const metasDemo = [
-            { 
-                descricao: 'Caminhar 30 minutos por dia', 
-                categoria: 'exercicio', 
-                dataLimite: new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0],
-                concluida: false 
-            },
-            { 
-                descricao: 'Reduzir consumo de açúcar', 
-                categoria: 'alimentacao', 
-                dataLimite: new Date(Date.now() + 14*24*60*60*1000).toISOString().split('T')[0],
-                concluida: true 
-            },
-            { 
-                descricao: 'Tomar medicação corretamente', 
-                categoria: 'medicacao', 
-                dataLimite: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
-                concluida: false 
-            }
-        ];
-        
-        metasDemo.forEach(meta => {
-            ArmazenamentoDados.adicionarMeta(meta);
-        });
-        
         atualizarHistorico();
-        atualizarMetas();
         atualizarGrafico();
         window.atualizarDistribuicao();
         console.log('✅ Dados de demonstração carregados');

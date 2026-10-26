@@ -102,7 +102,8 @@ class Utils {
      * @returns {object} Registro com estrutura completa
      */
     static criarRegistroGlicemia(dados) {
-        const { glicemia, data, hora, observacao } = dados;
+        const { glicemia, data, hora, observacao, insulina } = dados;
+        const dose = parseFloat(insulina);
         const categoria = Utils.obterCategoriaGlicemia(glicemia);
         
         return {
@@ -111,6 +112,7 @@ class Utils {
             data,
             hora,
             observacao: observacao || '',
+            insulina: dose > 0 ? dose : 0,
             status: categoria.status,
             statusClass: categoria.statusClass,
             timestamp: new Date(`${data}T${hora}`).getTime(),

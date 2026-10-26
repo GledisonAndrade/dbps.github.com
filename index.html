@@ -116,6 +116,14 @@
                         <div class="form-group"><label for="hora"><i class="fas fa-clock"></i> Hora</label><input type="time" id="hora" required></div>
                     </div>
                     <div class="form-group"><label for="observacao"><i class="fas fa-sticky-note"></i> Observações</label><textarea id="observacao" rows="3" placeholder="Ex: Após café da manhã..."></textarea></div>
+                    <div class="form-group" id="grupo-insulina" hidden>
+                        <label for="insulina"><i class="fas fa-syringe"></i> Dose de insulina para corrigir (unidades)</label>
+                        <input type="number" id="insulina" min="0" max="100" step="0.5" placeholder="Ex: 2 (opcional)">
+                        <small class="contato-orientacao">Glicemia alta. Siga a dose indicada pelo seu médico.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="lembrete-30"><input type="checkbox" id="lembrete-30"> <i class="fas fa-bell"></i> Lembrar de medir a glicose novamente em 30 min</label>
+                    </div>
                     <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Registrar Glicemia</button>
                 </form>
             </div>
@@ -275,7 +283,8 @@
                 <form id="form-meta" class="form-simples">
                     <div class="form-group"><label for="descricao-meta">Descrição da Meta:</label><input type="text" id="descricao-meta" required placeholder="Ex: Fazer exercícios 3x por semana"></div>
                     <div class="form-row"><div class="form-group"><label for="data-meta">Data Limite:</label><input type="date" id="data-meta"></div><div class="form-group"><label for="categoria-meta">Categoria:</label><select id="categoria-meta"><option value="exercicio">Exercício</option><option value="alimentacao">Alimentação</option><option value="medicacao">Medicação</option><option value="controle">Controle</option></select></div></div>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar Meta</button>
+                    <button type="submit" class="btn btn-primary" id="btn-salvar-meta"><i class="fas fa-plus"></i> Adicionar Meta</button>
+                    <button type="button" class="btn btn-secondary" id="btn-cancelar-edicao-meta" hidden><i class="fas fa-times"></i> Cancelar edição</button>
                 </form>
                 <div class="metas-listas"><div class="metas-pendentes"><h3>Metas Pendentes</h3><ul id="lista-metas-pendentes" class="lista-metas"></ul></div><div class="metas-concluidas"><h3>Metas Concluídas</h3><ul id="lista-metas-concluidas" class="lista-metas"></ul></div></div>
             </div>
