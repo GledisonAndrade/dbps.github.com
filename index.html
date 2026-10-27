@@ -211,9 +211,7 @@
                     <div class="form-group"><label for="ex-tipo">Atividade</label><select id="ex-tipo"></select></div>
                     <div class="form-row"><div class="form-group"><label for="ex-antes">Glicemia antes</label><input type="number" id="ex-antes" min="20" max="600" placeholder="mg/dL"></div>
                         <div class="form-group"><label for="ex-depois">Glicemia depois</label><input type="number" id="ex-depois" min="20" max="600" placeholder="mg/dL"></div></div>
-                    <div class="form-group" id="ex-grupo-min" hidden><label for="ex-min">Duração (min)</label><input type="number" id="ex-min" min="1" max="600"></div>
-                    <div class="dc-row-btn" id="ex-edicao-btns" hidden><button class="btn btn-primary" id="ex-salvar-edicao"><i class="fas fa-save"></i> Salvar alterações</button><button class="btn" id="ex-cancelar-edicao"><i class="fas fa-times"></i> Cancelar</button></div>
-                    <div class="dc-row-btn" id="ex-live-btns"><button class="btn btn-primary" id="ex-iniciar"><i class="fas fa-play"></i> Iniciar</button><button class="btn" id="ex-parar" disabled><i class="fas fa-stop"></i> Finalizar</button></div>
+                    <div class="dc-row-btn"><button class="btn btn-primary" id="ex-iniciar"><i class="fas fa-play"></i> Iniciar</button><button class="btn" id="ex-parar" disabled><i class="fas fa-stop"></i> Finalizar</button></div>
                 </div>
                 <div class="card dc-span2">
                     <div class="dc-card-head"><h3><i class="fas fa-calendar-check"></i> Semana</h3><div class="dc-hint">Toque num exercício para marcar como feito</div></div>
@@ -229,7 +227,11 @@
                     <p class="dc-hint">Glicemia antes vs. depois dos treinos registrados.</p>
                 </div>
                 <div class="card dc-span2">
-                    <div class="dc-card-head"><h3><i class="fas fa-clock-rotate-left"></i> Treinos recentes</h3></div>
+                    <div class="dc-card-head"><h3><i class="fas fa-clock-rotate-left"></i> Treinos recentes</h3>
+                        <div>
+                            <button type="button" class="btn btn-secondary" id="ex-apagar-sel" disabled><i class="fas fa-trash"></i> Apagar selecionados</button>
+                            <button type="button" class="btn btn-secondary" id="ex-apagar-todos"><i class="fas fa-trash-can"></i> Apagar todos</button>
+                        </div></div>
                     <ul class="dc-lista" id="ex-historico"></ul>
                 </div>
             </div>

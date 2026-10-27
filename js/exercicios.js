@@ -127,75 +127,29 @@
     function renderHistorico() {
         const ul = $('ex-historico');
         ul.innerHTML = '';
-        const lista = estado.treinos.slice(-8).reverse();
+        const lista = estado.treinos.slice().reverse();
+        $('ex-apagar-todos').disabled = !lista.length;
+        atualizarBotaoSelecionados();
         if (!lista.length) { ul.innerHTML = '<li><span>Nenhum treino registrado ainda. Use o cronômetro ao lado!</span></li>'; return; }
         lista.forEach(t => {
             const li = document.createElement('li');
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.className = 'ex-sel';
+            chk.dataset.id = t.id;
+            chk.setAttribute('aria-label', 'Selecionar treino');
             const a = document.createElement('span');
             a.textContent = `${ATIV[t.tipo]?.ic || ''} ${ATIV[t.tipo]?.nome || t.tipo} · ${t.min} min · ${new Date(t.ts).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`;
             const b = document.createElement('span');
             b.className = 'dc-tag';
             b.textContent = t.antes && t.depois ? `${t.antes} → ${t.depois} mg/dL` : 'sem glicemia';
-            const acoes = document.createElement('span');
-            const ed = document.createElement('button');
-            ed.className = 'btn-editar'; ed.title = 'Editar treino'; ed.innerHTML = '<i class="fas fa-pen"></i>';
-            ed.addEventListener('click', () => iniciarEdicao(t.id));
-            const ex = document.createElement('button');
-            ex.className = 'btn-excluir'; ex.title = 'Excluir treino'; ex.innerHTML = '<i class="fas fa-trash"></i>';
-            ex.addEventListener('click', () => excluirTreino(t.id));
-            acoes.append(ed, ex);
-            li.append(a, b, acoes);
+            li.append(chk, a, b);
             ul.appendChild(li);
         });
     }
 
-    let editandoId = null;
-
-    function modoEdicao(ativo) {
-        $('ex-grupo-min').hidden = !ativo;
-        $('ex-edicao-btns').hidden = !ativo;
-        $('ex-live-btns').hidden = ativo;
-    }
-
-    function iniciarEdicao(id) {
-        const t = estado.treinos.find(x => x.id === id);
-        if (!t) return;
-        editandoId = id;
-        $('ex-tipo').value = t.tipo;
-        $('ex-min').value = t.min;
-        $('ex-antes').value = t.antes || '';
-        $('ex-depois').value = t.depois || '';
-        modoEdicao(true);
-        $('ex-tipo').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function sairEdicao() {
-        editandoId = null;
-        $('ex-antes').value = ''; $('ex-depois').value = ''; $('ex-min').value = '';
-        modoEdicao(false);
-    }
-
-    function salvarEdicao() {
-        const t = estado.treinos.find(x => x.id === editandoId);
-        const min = parseInt($('ex-min').value);
-        if (!t || !(min > 0)) { window.Notificacoes?.erro?.('Informe uma duração válida'); return; }
-        t.tipo = $('ex-tipo').value;
-        t.min = min;
-        t.antes = parseInt($('ex-antes').value) || null;
-        t.depois = parseInt($('ex-depois').value) || null;
-        salvar();
-        sairEdicao();
-        renderTudo();
-        window.Notificacoes?.sucesso?.('Treino atualizado');
-    }
-
-    function excluirTreino(id) {
-        if (!confirm('Tem certeza que deseja excluir este treino?')) return;
-        estado.treinos = estado.treinos.filter(x => x.id !== id);
-        if (editandoId === id) sairEdicao();
-        salvar();
-        renderTudo();
-        window.Notificacoes?.sucesso?.('Treino excluído');
+    function atualizarBotaoSelecionados() {
+        $('ex-apagar-sel').disabled = !document.querySelector('#ex-historico .ex-sel:checked');
     }
 
     function renderTudo() { renderAviso(); renderNivel(); renderSemana(); renderProgresso(); renderGraficos(); renderHistorico(); }
@@ -239,8 +193,20 @@
             if (i >= 0) lista.splice(i, 1); else lista.push(b.dataset.id);
             salvar(); renderTudo();
         });
-        $('ex-salvar-edicao').addEventListener('click', salvarEdicao);
-        $('ex-cancelar-edicao').addEventListener('click', sairEdicao);
+        $('ex-historico').addEventListener('change', atualizarBotaoSelecionados);
+        $('ex-apagar-sel').addEventListener('click', () => {
+            const ids = [...document.querySelectorAll('#ex-historico .ex-sel:checked')].map(c => Number(c.dataset.id));
+            if (!ids.length || !confirm(`Apagar ${ids.length} treino(s) selecionado(s)?`)) return;
+            estado.treinos = estado.treinos.filter(t => !ids.includes(t.id));
+            salvar(); renderTudo();
+            window.Notificacoes?.sucesso?.('Treino(s) apagado(s)');
+        });
+        $('ex-apagar-todos').addEventListener('click', () => {
+            if (!estado.treinos.length || !confirm('Apagar TODOS os treinos do histórico?')) return;
+            estado.treinos = [];
+            salvar(); renderTudo();
+            window.Notificacoes?.sucesso?.('Histórico de treinos apagado');
+        });
         $('ex-iniciar').addEventListener('click', iniciar);
         $('ex-parar').addEventListener('click', parar);
         document.addEventListener('secaoAtivada', e => { if (e.detail.secaoId === 'exercicios') setTimeout(renderTudo, 50); });
