@@ -136,9 +136,66 @@
             const b = document.createElement('span');
             b.className = 'dc-tag';
             b.textContent = t.antes && t.depois ? `${t.antes} → ${t.depois} mg/dL` : 'sem glicemia';
-            li.append(a, b);
+            const acoes = document.createElement('span');
+            const ed = document.createElement('button');
+            ed.className = 'btn-editar'; ed.title = 'Editar treino'; ed.innerHTML = '<i class="fas fa-pen"></i>';
+            ed.addEventListener('click', () => iniciarEdicao(t.id));
+            const ex = document.createElement('button');
+            ex.className = 'btn-excluir'; ex.title = 'Excluir treino'; ex.innerHTML = '<i class="fas fa-trash"></i>';
+            ex.addEventListener('click', () => excluirTreino(t.id));
+            acoes.append(ed, ex);
+            li.append(a, b, acoes);
             ul.appendChild(li);
         });
+    }
+
+    let editandoId = null;
+
+    function modoEdicao(ativo) {
+        $('ex-grupo-min').hidden = !ativo;
+        $('ex-edicao-btns').hidden = !ativo;
+        $('ex-live-btns').hidden = ativo;
+    }
+
+    function iniciarEdicao(id) {
+        const t = estado.treinos.find(x => x.id === id);
+        if (!t) return;
+        editandoId = id;
+        $('ex-tipo').value = t.tipo;
+        $('ex-min').value = t.min;
+        $('ex-antes').value = t.antes || '';
+        $('ex-depois').value = t.depois || '';
+        modoEdicao(true);
+        $('ex-tipo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function sairEdicao() {
+        editandoId = null;
+        $('ex-antes').value = ''; $('ex-depois').value = ''; $('ex-min').value = '';
+        modoEdicao(false);
+    }
+
+    function salvarEdicao() {
+        const t = estado.treinos.find(x => x.id === editandoId);
+        const min = parseInt($('ex-min').value);
+        if (!t || !(min > 0)) { window.Notificacoes?.erro?.('Informe uma duração válida'); return; }
+        t.tipo = $('ex-tipo').value;
+        t.min = min;
+        t.antes = parseInt($('ex-antes').value) || null;
+        t.depois = parseInt($('ex-depois').value) || null;
+        salvar();
+        sairEdicao();
+        renderTudo();
+        window.Notificacoes?.sucesso?.('Treino atualizado');
+    }
+
+    function excluirTreino(id) {
+        if (!confirm('Tem certeza que deseja excluir este treino?')) return;
+        estado.treinos = estado.treinos.filter(x => x.id !== id);
+        if (editandoId === id) sairEdicao();
+        salvar();
+        renderTudo();
+        window.Notificacoes?.sucesso?.('Treino excluído');
     }
 
     function renderTudo() { renderAviso(); renderNivel(); renderSemana(); renderProgresso(); renderGraficos(); renderHistorico(); }
@@ -182,6 +239,8 @@
             if (i >= 0) lista.splice(i, 1); else lista.push(b.dataset.id);
             salvar(); renderTudo();
         });
+        $('ex-salvar-edicao').addEventListener('click', salvarEdicao);
+        $('ex-cancelar-edicao').addEventListener('click', sairEdicao);
         $('ex-iniciar').addEventListener('click', iniciar);
         $('ex-parar').addEventListener('click', parar);
         document.addEventListener('secaoAtivada', e => { if (e.detail.secaoId === 'exercicios') setTimeout(renderTudo, 50); });
